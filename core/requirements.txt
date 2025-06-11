@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+httpx
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+sqlalchemy
+chromadb-client
+arq
+redis
+loguru
+aiosqlite
+groq

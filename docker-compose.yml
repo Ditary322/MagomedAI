@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  core:
+    build:
+      context: ./core
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./core:/app
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"] # Проверка, что Redis жив и отвечает
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8001:8000"  # Мы пробрасываем порт 8000 из контейнера на 8001 нашего ПК
+    volumes:
+      - chroma_data:/chroma/.chroma/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 5  
+
+  # Сервис №3: Наш "Мозг" Ollama
+  #ollama:
+    #image: ollama/ollama
+    #ports:
+      #- "11434:11434"
+    #volumes:
+      #- ollama_data:/root/.ollama # Сохраняем скачанные модели между перезапусками
+
+# Определяем "именованный том", чтобы данные Ollama не терялись
+volumes:
+  #ollama_data:
+  chroma_data:
